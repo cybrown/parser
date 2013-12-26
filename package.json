@@ -1,0 +1,19 @@
+{
+  "name": "lang",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt-mocha-cli": "~1.4.0",
+    "grunt": "~0.4.2",
+    "should": "~2.1.1",
+    "grunt-peg": "~1.0.0",
+    "grunt-contrib-watch": "~0.5.3"
+  }
+}
