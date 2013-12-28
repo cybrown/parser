@@ -1,4 +1,4 @@
-describe ('statement parser', function () {
+describe ('statement parser old', function () {
 
     var LineParser = require('../lineparser');
     var lineParser = new LineParser();

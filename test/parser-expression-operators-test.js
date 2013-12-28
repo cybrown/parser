@@ -4,43 +4,43 @@ var expressions = require('../nodes/expressions');
 describe('parser expression for unary operators', function () {
 
     it ('should return symbol -', function () {
-        var t = parser.parse('- 1');
+        var t = parser.parse('- 1', 'expression');
         t.should.be.an.instanceOf(expressions.Op1);
         t.operator.should.eql('-');
     });
 
     it ('should return symbol +', function () {
-        var t = parser.parse('+ 1');
+        var t = parser.parse('+ 1', 'expression');
         t.should.be.an.instanceOf(expressions.Op1);
         t.operator.should.eql('+');
     });
 
     it ('should return symbol ++', function () {
-        var t = parser.parse('++ 1');
+        var t = parser.parse('++ 1', 'expression');
         t.should.be.an.instanceOf(expressions.Op1);
         t.operator.should.eql('++');
     });
 
     it ('should return symbol !', function () {
-        var t = parser.parse('! 1');
+        var t = parser.parse('! 1', 'expression');
         t.should.be.an.instanceOf(expressions.Op1);
         t.operator.should.eql('!');
     });
 
     it ('should return symbol ~', function () {
-        var t = parser.parse('~ 1');
+        var t = parser.parse('~ 1', 'expression');
         t.should.be.an.instanceOf(expressions.Op1);
         t.operator.should.eql('~');
     });
 
     it ('should return symbol - with sub expression', function () {
-        var t = parser.parse('- ( 1 + 5 )');
+        var t = parser.parse('- ( 1 + 5 )', 'expression');
         t.should.be.an.instanceOf(expressions.Op1);
         t.operator.should.eql('-');
     });
 
     it ('should return multiple unary operators', function () {
-        var t = parser.parse('! - 1');
+        var t = parser.parse('! - 1', 'expression');
         t.should.be.an.instanceOf(expressions.Op1);
         t.operator.should.eql('!');
         t.operand.should.be.an.instanceOf(expressions.Op1);
@@ -53,61 +53,61 @@ describe('parser expression for unary operators', function () {
 describe('parser expression for binary operators', function () {
 
     it ('should return symbol |-', function () {
-        var t = parser.parse('1|-1');
+        var t = parser.parse('1|-1', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('|-');
     });
 
     it ('should return symbol ^', function () {
-        var t = parser.parse('1^1');
+        var t = parser.parse('1^1', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('^');
     });
 
     it ('should return symbol &', function () {
-        var t = parser.parse('1&1');
+        var t = parser.parse('1&1', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('&');
     });
 
     it ('should return symbol <>', function () {
-        var t = parser.parse('1<>1');
+        var t = parser.parse('1<>1', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('<>');
     });
 
     it ('should return symbol ==!', function () {
-        var t = parser.parse('1==!1');
+        var t = parser.parse('1==!1', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('==!');
     });
 
     it ('should return symbol :+*', function () {
-        var t = parser.parse('foo:+$bar');
+        var t = parser.parse('foo:+$bar', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql(':+');
     });
 
     it ('should return symbol +*/', function () {
-        var t = parser.parse('31.4e-1+*/pi');
+        var t = parser.parse('31.4e-1+*/pi', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('+*/');
     });
 
     it ('should return symbol **', function () {
-        var t = parser.parse('foo**foo');
+        var t = parser.parse('foo**foo', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('**');
     });
 
     it ('should return symbol .', function () {
-        var t = parser.parse('foo.bar');
+        var t = parser.parse('foo.bar', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('.');
     });
 
     it ('should return symbol []', function () {
-        var t = parser.parse('foo[bar]');
+        var t = parser.parse('foo[bar]', 'expression');
         t.should.be.an.instanceOf(expressions.Op2);
         t.operator.should.eql('[]');
     });

@@ -47,6 +47,18 @@ var Call = function (func, args) {
     this.args = args;
 };
 
+var Statement = function () {
+
+};
+
+var StatementIf = function (condition) {
+    this.condition = condition;
+};
+
+var StatementWhile = function (condition) {
+    this.condition = condition;
+};
+
 module.exports = {
     OP1: OP1,
     OP2: OP2,
@@ -54,5 +66,7 @@ module.exports = {
     Op2: Op2,
     Call: Call,
     Value: Value,
-    ValueType: ValueType
+    ValueType: ValueType,
+    StatementIf: StatementIf,
+    StatementWhile: StatementWhile
 };

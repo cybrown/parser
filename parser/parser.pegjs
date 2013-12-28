@@ -1,94 +1,153 @@
 {
     var expressions = require('../nodes/expressions');
+
+    // Expression nodes
     var Op1 = expressions.Op1;
     var Op2 = expressions.Op2;
     var Call = expressions.Call;
     var Value = expressions.Value;
     var ValueType = expressions.ValueType;
+
+    // Statement nodes
+    var StatementIf = expressions.StatementIf;
+    var StatementWhile = expressions.StatementWhile;
+
+    var stack = [];
+    var program = [];
+    var current_block = program;
 }
 start
-    = __ result:expression __ { return result; }
+    = program
+
+program
+    = line* { return program; }
+
+line
+    = EOL
+    / index:IDENT c:statement EOL? {
+        var cur = c;
+        c.index = index;
+        while (stack[stack.length - 1] && (stack[stack.length - 1].index > cur.index)) {
+            stack.pop();
+            if (stack[stack.length - 1]) {
+                current_block = stack[stack.length - 1].block;
+            } else {
+                current_block = program;
+            }
+        }
+
+        if (stack[stack.length - 1]) {
+            if (stack[stack.length - 1].index < index) {
+                current_block = stack[stack.length - 1].block = [];
+                stack.push(cur);
+                current_block.push(cur);
+            } else {
+                stack[stack.length - 1] = cur;
+                current_block.push(cur);
+            }
+        } else {
+            stack.push(cur);
+            current_block.push(cur);
+        }
+    }
+
+statement
+    = statement_if
+    / statement_while
+    / expression
+
+statement_if
+    = "if" _ condition:expression { var res = new StatementIf(condition); return res; }
+
+statement_while
+    = "while" _ condition:expression { var res = new StatementWhile(condition); return res; }
+
+statement_var
+    = "var" _ symbol ":" symbol "=" expression
+
+IDENT
+    = spaces:" "* { return spaces.length; }
 
 expression
   = res:op_prec_1 {return res;}
 
 op_prec_1
-    = head:op_prec_2 __ tail:(op_prec_1_operator __ op_prec_2)*  {
+    = head:op_prec_2 tail:( _ op_prec_1_operator _ op_prec_2)*  {
         var result = head;
         for (var i = 0; i < tail.length; i++) {
-            result = new Op2(tail[i][0], result, tail[i][2]);
+            result = new Op2(tail[i][1], result, tail[i][3]);
         }
         return result;
     }
 
 op_prec_2
-    = head:op_prec_3 __ tail:(op_prec_2_operator __ op_prec_3)*  {
+    = head:op_prec_3 tail:( _ op_prec_2_operator _ op_prec_3)*  {
         var result = head;
         for (var i = 0; i < tail.length; i++) {
-            result = new Op2(tail[i][0], result, tail[i][2]);
+            result = new Op2(tail[i][1], result, tail[i][3]);
         }
         return result;
     }
 
 op_prec_3
-    = head:op_prec_4 __ tail:(op_prec_3_operator __ op_prec_4)*  {
+    = head:op_prec_4 tail:( _ op_prec_3_operator _ op_prec_4)*  {
         var result = head;
         for (var i = 0; i < tail.length; i++) {
-            result = new Op2(tail[i][0], result, tail[i][2]);
+            result = new Op2(tail[i][1], result, tail[i][3]);
         }
         return result;
     }
 
 op_prec_4
-    = head:op_prec_5 __ tail:(op_prec_4_operator __ op_prec_5)*  {
+    = head:op_prec_5 tail:( _ op_prec_4_operator _ op_prec_5)*  {
         var result = head;
         for (var i = 0; i < tail.length; i++) {
-            result = new Op2(tail[i][0], result, tail[i][2]);
+            result = new Op2(tail[i][1], result, tail[i][3]);
         }
         return result;
     }
 
 op_prec_5
-    = head:op_prec_6 __ tail:(op_prec_5_operator __ op_prec_6)*  {
+    = head:op_prec_6 tail:( _ op_prec_5_operator _ op_prec_6)*  {
         var result = head;
         for (var i = 0; i < tail.length; i++) {
-            result = new Op2(tail[i][0], result, tail[i][2]);
+            result = new Op2(tail[i][1], result, tail[i][3]);
         }
         return result;
     }
 
 op_prec_6
-    = head:op_prec_7 __ tail:(op_prec_6_operator __ op_prec_7)*  {
+    = head:op_prec_7 tail:( _ op_prec_6_operator _ op_prec_7)*  {
         var result = head;
         for (var i = 0; i < tail.length; i++) {
-            result = new Op2(tail[i][0], result, tail[i][2]);
+            result = new Op2(tail[i][1], result, tail[i][3]);
         }
         return result;
     }
 
 op_prec_7
-    = head:op_prec_8 __ tail:(op_prec_7_operator __ op_prec_8)* {
+    = head:op_prec_8 tail:( _ op_prec_7_operator _ op_prec_8)* {
             var result = head;
             for (var i = 0; i < tail.length; i++) {
-                result = new Op2(tail[i][0], result, tail[i][2]);
+                result = new Op2(tail[i][1], result, tail[i][3]);
             }
             return result;
         }
 
 op_prec_8
-    = head:op_dot __ tail:(op_prec_8_operator __ op_dot)*  {
+    = head:op_dot tail:( _ op_prec_8_operator _ op_dot)*  {
         var result = head;
         for (var i = 0; i < tail.length; i++) {
-            result = new Op2(tail[i][0], result, tail[i][2]);
+            result = new Op2(tail[i][1], result, tail[i][3]);
         }
         return result;
     }
 
 op_dot
-    = head:op_unary_postfix __ tail:(("." __ op_unary_postfix) / ("[" __ expression __ "]"))*{
+    = head:op_unary_postfix tail:(( _ "." _ op_unary_postfix) / ( _ "[" _ expression _ "]"))*{
         var result = head;
         for (var i = 0; i < tail.length; i++) {
-            result = new Op2(tail[i][0] == '[' ? '[]' : tail[i][0], result, tail[i][2]);
+            result = new Op2(tail[i][1] == '[' ? '[]' : tail[i][1], result, tail[i][3]);
         }
         return result;
     }
@@ -97,8 +156,8 @@ op_unary_postfix
     = op_unary_prefix
 
 op_unary_prefix
-    = operator:unary_operator_symbol+ __ operand:op_unary_prefix { return new Op1(operator.join(''), operand); }
-    / "(" __ sub_expression:expression __ ")" { return sub_expression; }
+    = operator:unary_operator_symbol+ _ operand:op_unary_prefix { return new Op1(operator.join(''), operand); }
+    / "(" _ sub_expression:expression _ ")" { return sub_expression; }
     / primary
 
 unary_operator_symbol
@@ -181,5 +240,10 @@ op_prec_8_operator
 operator_char
     = '*' / '/' / '%' / '+' / '-' / ':' / '=' / '!' / '<' / '>' / '&' / '^' / '|'
 
-__
+_
     = " "*
+
+EOL
+    = '\n'
+    / '\r\n'
+    / '\r'
