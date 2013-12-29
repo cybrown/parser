@@ -1,16 +1,21 @@
 {
-    var expressions = require('../nodes/expressions');
+    var nodes = require('../nodes/expressions');
 
     // Expression nodes
-    var Op1 = expressions.Op1;
-    var Op2 = expressions.Op2;
-    var Call = expressions.Call;
-    var Value = expressions.Value;
-    var ValueType = expressions.ValueType;
+    var Op1 = nodes.Op1;
+    var Op2 = nodes.Op2;
+    var Call = nodes.Call;
+    var Value = nodes.Value;
+    var ValueType = nodes.ValueType;
 
     // Statement nodes
-    var StatementIf = expressions.StatementIf;
-    var StatementWhile = expressions.StatementWhile;
+    var StatementExpression = nodes.StatementExpression;
+    var StatementIf = nodes.StatementIf;
+    var StatementWhile = nodes.StatementWhile;
+
+    // Declarations
+    var DeclarationClass = nodes.DeclarationClass;
+    var DeclarationAttribute = nodes.DeclarationAttribute;
 
     var stack = [];
     var program = [];
@@ -20,50 +25,51 @@ start
     = program
 
 program
-    = line* { return program; }
+    = declarations:declaration+ { return declarations; }
 
-line
-    = EOL
-    / index:IDENT c:statement EOL? {
-        var cur = c;
-        c.index = index;
-        while (stack[stack.length - 1] && (stack[stack.length - 1].index > cur.index)) {
-            stack.pop();
-            if (stack[stack.length - 1]) {
-                current_block = stack[stack.length - 1].block;
-            } else {
-                current_block = program;
-            }
-        }
+declaration
+    = declaration_class
+    / declaration_protocol
 
-        if (stack[stack.length - 1]) {
-            if (stack[stack.length - 1].index < index) {
-                current_block = stack[stack.length - 1].block = [];
-                stack.push(cur);
-                current_block.push(cur);
-            } else {
-                stack[stack.length - 1] = cur;
-                current_block.push(cur);
-            }
-        } else {
-            stack.push(cur);
-            current_block.push(cur);
-        }
-    }
+declaration_class
+    = _ "class" _ name:symbol _ "{" members:declaration_member* _ "}" { return new DeclarationClass(name, members); }
+
+declaration_protocol
+    = declaration_class
+
+declaration_member
+    = declaration_attribute
+    / declaration_method
+
+declaration_attribute
+    = _ name:symbol _ ":" _ type:type _ ";" { return new DeclarationAttribute(name, type); }
+
+declaration_method
+    = _ name:symbol _ "(" _ ")" _ ":" type:type "{"  "}"
+
+type
+    = symbol
 
 statement
     = statement_if
     / statement_while
-    / expression
+    / statement_block
+    / statement_expression
+
+statement_expression
+    = expression:expression _ ";" { return new StatementExpression(expression); }
+
+statement_block
+    = "{" _ statements:(statement _ )* _ "}" { return statements.map(function(elem) {return elem[0];}); }
 
 statement_if
-    = "if" _ condition:expression { var res = new StatementIf(condition); return res; }
+    = "if" _ condition:expression _ block:statement_block { var res = new StatementIf(condition, block); return res; }
 
 statement_while
-    = "while" _ condition:expression { var res = new StatementWhile(condition); return res; }
+    = "while" _ condition:expression _ block:statement_block { var res = new StatementWhile(condition, block); return res; }
 
 statement_var
-    = "var" _ symbol ":" symbol "=" expression
+    = "var" _ symbol _ ":" symbol _ "=" _ expression
 
 IDENT
     = spaces:" "* { return spaces.length; }
@@ -168,7 +174,7 @@ unary_operator_symbol
 
 primary
     = literal
-    / symbol
+    / value_symbol
 
 /* =====================
 
@@ -210,8 +216,11 @@ float
     = int:[0-9]+ "." dec:[0-9]* exponential:([eE] "-"? [0-9]+)? double:"d"? { return new Value(double == 'd' ? ValueType.FLOAT64 : ValueType.FLOAT32, (int.join ? int.join('') : '') + '.' + dec.join('') + (Array.isArray(exponential) ? exponential[0] + exponential[1] + exponential[2].join(''): '')); }
     / "." dec:[0-9]+ exponential:([eE] "-"? [0-9]+)? double:"d"? { return new Value(double == 'd' ? ValueType.FLOAT64 : ValueType.FLOAT32, '.' + dec.join('') + (Array.isArray(exponential) ? exponential[0] + exponential[1] + exponential[2].join(''): '')); }
 
+value_symbol
+    = symbol:symbol { return new Value(ValueType.SYMBOL, symbol); }
+
 symbol
-    = "$"? first:[a-zA-Z_] second:[a-zA-Z_0-9]*         { return new Value(ValueType.SYMBOL, first + second.join('')); }
+    = "$"? first:[a-zA-Z_] second:[a-zA-Z_0-9]*         { return first + second.join(''); }
 
 op_prec_1_operator
     = op:("|" operator_char*) { return op[0] + op[1].join(''); }
@@ -241,7 +250,7 @@ operator_char
     = '*' / '/' / '%' / '+' / '-' / ':' / '=' / '!' / '<' / '>' / '&' / '^' / '|'
 
 _
-    = " "*
+    = (" " / EOL)*
 
 EOL
     = '\n'
