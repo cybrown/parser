@@ -15,6 +15,7 @@
 
     // Declarations
     var DeclarationClass = nodes.DeclarationClass;
+    var DeclarationInterface = nodes.DeclarationInterface;
     var DeclarationAttribute = nodes.DeclarationAttribute;
 
     var stack = [];
@@ -29,13 +30,13 @@ program
 
 declaration
     = declaration_class
-    / declaration_protocol
+    / declaration_interface
 
 declaration_class
     = _ "class" _ name:symbol _ "{" members:declaration_member* _ "}" { return new DeclarationClass(name, members); }
 
-declaration_protocol
-    = declaration_class
+declaration_interface
+    = _ "interface" _ name:symbol _ "{" members:declaration_member* _ "}" { return new DeclarationInterface(name, members); }
 
 declaration_member
     = declaration_attribute

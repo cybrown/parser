@@ -101,6 +101,13 @@ var DeclarationClass = function (name, members) {
 };
 DeclarationClass.prototype = Object.create(Declaration.prototype);
 
+var DeclarationInterface = function (name, members) {
+    Declaration.call(this);
+    this.name = name;
+    this.members = members;
+};
+DeclarationInterface.prototype = Object.create(Declaration.prototype);
+
 var DeclarationAttribute = function (name, type, value) {
     Declaration.call(this);
     this.name = name;
@@ -121,5 +128,6 @@ module.exports = {
     StatementWhile: StatementWhile,
 
     DeclarationClass: DeclarationClass,
-    DeclarationAttribute: DeclarationAttribute
+    DeclarationAttribute: DeclarationAttribute,
+    DeclarationInterface: DeclarationInterface
 };

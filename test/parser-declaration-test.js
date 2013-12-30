@@ -15,9 +15,9 @@ describe ('Parser Declaration', function () {
 
     it ('should return an interface declaration', function () {
         var prg = 'interface IFoo { i : int;}';
-        var t = parser.parse(prg, 'declaration_class');
-        t.should.be.an.instanceOf(expressions.DeclarationClass);
-        t.name.should.eql('Foo');
+        var t = parser.parse(prg, 'declaration_interface');
+        t.should.be.an.instanceOf(expressions.DeclarationInterface);
+        t.name.should.eql('IFoo');
         t.members[0].should.be.an.instanceOf(expressions.DeclarationAttribute);
         t.members[0].name.should.eql('i');
         t.members[0].type.should.eql('int');
